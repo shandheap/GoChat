@@ -1,8 +1,46 @@
 <html>
   <head>
     <title>GoChat</title>
+    <style>
+      input { display: block; }
+      ul { list-style: none; }
+    </style>
   </head>
   <body>
-    It's Chat time (from template)
+    <ul id="messages">
+    </ul>
+    <form id="chatbox">
+      <textarea></textarea>
+      <input type="submit" value="Send" />
+    </form>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script>
+    $(function() {
+      var socket = null;
+      var msgBox = $('#chatbox textarea');
+      var messages = $('#messages');
+      // Chat box submission handler
+      $('#chatbox').submit(function(){
+        if (!msgBox.val()) {
+          return false;
+        }
+        socket.send(msgBox.val());
+        msgBox.val("");
+        return false;
+      })
+      // Websocket support handler
+      if (!window["WebSocket"]) {
+        alert("Error: Your browser does not support web sockets")
+      } else {
+        socket = new WebSocket("ws://localhost:8080/room");
+        socket.onclose = function() {
+          alert("Connection has been closed");
+        }
+        socket.onmessage = function(e) {
+          messages.append($("<li>").text(e.data))
+        }
+      }
+    });
+    </script>
   </body>
 </html>
