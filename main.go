@@ -4,11 +4,11 @@ import (
 	"flag"
 	"log"
 	"net/http"
-	"os"
+	// "os"
 	"path/filepath"
 	"sync"
 	"text/template"
-	"trace"
+	// "trace"
 )
 
 // templateHandler: A HTML Template Handler
@@ -27,19 +27,23 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	var addr = flag.String("addr", ":8080", "The address of the application.")
+	var host = flag.String("host", ":8080", "The host of the application.")
 	flag.Parse() // parse the flags
 
 	r := newRoom()
-	r.tracer = trace.New(os.Stdout)
+	// r.tracer = trace.New(os.Stdout)
 	// Routes
-	http.Handle("/", &templateHandler{filename: "chat.html"})
+	http.Handle("/assets/", http.StripPrefix("/assets", http.FileServer(http.Dir("assets/"))))
+	http.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))
+	http.Handle("/login", &templateHandler{filename: "login.html"})
+	http.HandleFunc("/auth/", loginHandler)
 	http.Handle("/room", r)
+
 	// Start the room
 	go r.run()
 	// start the web server
-	log.Println("Starting web server on", *addr)
-	if err := http.ListenAndServe(*addr, nil); err != nil {
+	log.Println("Starting web server on", *host)
+	if err := http.ListenAndServe(*host, nil); err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}
 }

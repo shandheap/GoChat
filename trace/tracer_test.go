@@ -18,3 +18,9 @@ func TestNew(t *testing.T) {
 		}
 	}
 }
+
+// Test the Off method for Tracer
+func TestOff(t *testing.T) {
+	var silentTracer Tracer = Off()
+	silentTracer.Trace("something")
+}
