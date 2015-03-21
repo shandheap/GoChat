@@ -4,9 +4,11 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"sync"
 	"text/template"
+	"trace"
 )
 
 // templateHandler: A HTML Template Handler
@@ -27,7 +29,10 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func main() {
 	var addr = flag.String("addr", ":8080", "The address of the application.")
 	flag.Parse() // parse the flags
+
 	r := newRoom()
+	r.tracer = trace.New(os.Stdout)
+	// Routes
 	http.Handle("/", &templateHandler{filename: "chat.html"})
 	http.Handle("/room", r)
 	// Start the room
