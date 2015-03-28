@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gorilla/websocket"
+	"time"
 )
 
 // client: A Chat Client
@@ -9,14 +10,19 @@ type client struct {
 	// client websocket connection
 	socket *websocket.Conn
 	// client message channel
-	send chan []byte
+	send chan *message
 	// client current chatroom
 	room *room
+	// client's userData
+	userData map[string]interface{}
 }
 
 func (c *client) read() {
 	for {
-		if _, msg, err := c.socket.ReadMessage(); err == nil {
+		var msg *message
+		if err := c.socket.ReadJSON(&msg); err == nil {
+			msg.SentTime = time.Now()
+			msg.Sender = c.userData["name"].(string)
 			c.room.forward <- msg
 		} else {
 			break
@@ -27,7 +33,7 @@ func (c *client) read() {
 
 func (c *client) write() {
 	for msg := range c.send {
-		if err := c.socket.WriteMessage(websocket.TextMessage, msg); err != nil {
+		if err := c.socket.WriteJSON(msg); err != nil {
 			break
 		}
 	}
