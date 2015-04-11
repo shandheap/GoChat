@@ -37,6 +37,18 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	t.templ.Execute(w, data)
 }
 
+// logoutHandler: Logouts the user by clearing their auth cookie
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:   "ChatAuth",
+		Value:  "",
+		Path:   "/",
+		MaxAge: -1,
+	})
+	w.Header()["Location"] = []string{"/chat"}
+	w.WriteHeader(http.StatusTemporaryRedirect)
+}
+
 func main() {
 	var host = flag.String("host", ":8080", "The host of the application.")
 	flag.Parse() // parse the flags
@@ -63,6 +75,7 @@ func main() {
 	http.Handle("/login", &templateHandler{filename: "login.html"})
 	http.HandleFunc("/auth/", loginHandler)
 	http.Handle("/room", r)
+	http.HandleFunc("/logout", logoutHandler)
 
 	// Start the room
 	go r.run()

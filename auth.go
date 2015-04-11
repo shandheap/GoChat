@@ -14,7 +14,7 @@ type authHandler struct {
 }
 
 func (h *authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if _, err := r.Cookie("ChatAuth"); err == http.ErrNoCookie {
+	if cookie, err := r.Cookie("ChatAuth"); err == http.ErrNoCookie || cookie.Value == "" {
 		// authentication failed
 		w.Header().Set("Location", "/login")
 		w.WriteHeader(http.StatusTemporaryRedirect)
@@ -67,7 +67,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		authCookieValue := objx.New(map[string]interface{}{
-			"name": curUser.Name(),
+			"name":   curUser.Name(),
+			"avatar": curUser.AvatarURL(),
 		}).MustBase64()
 		http.SetCookie(w, &http.Cookie{
 			Name:  "ChatAuth",

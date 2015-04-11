@@ -1,19 +1,34 @@
 <html>
   <head>
-    <title>GoChat</title>
+    <link rel="stylesheet" href="/assets/bootstrap.min.css">
     <style>
-      input { display: block; }
-      ul { list-style: none; }
+      ul#messages        { list-style: none; }
+      ul#messages li     { margin-bottom: 2px; }
+      ul#messages li img { margin-right: 10px; }
     </style>
+    <title>GoChat</title>
   </head>
   <body>
-    <ul id="messages">
-    </ul>
-    <form id="chatbox" onkeypress="isEnter(event);">
-      {{.UserData.name}}:<br />
-      <textarea></textarea>
-      <input type="submit" value="Send" />
-    </form>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-12 col-md-10 col-lg-8 col-md-offset-1 col-lg-offset-2">
+          <div class="panel panel-default">
+            <ul id="messages"></ul>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-12 col-md-10 col-lg-8 col-md-offset-1 col-lg-offset-2">
+          <form id="chatbox" onkeypress="isEnter(event);" role="form">
+            <div class="form-group" style="text-align: center;">
+              <label for="message">Send a message as {{.UserData.name}} or <a href="/logout">Sign Out</a></label>
+              <textarea id="message" class="form-control"></textarea>
+              <input class="btn btn-primary" style="width: 50%; margin-top: 20px;" type="submit" value="Send" />
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
     <script>
     function isEnter(e) {
@@ -51,14 +66,17 @@
       } else {
         socket = new WebSocket("ws://{{.Host}}/room");
         socket.onclose = function() {
-          alert("Connection has been closed");
+          alert("You have been disconnected");
         }
         socket.onmessage = function(e) {
           var msg = JSON.parse(e.data);
 
           messages.append(
-            $("<li>").append(
-              $('<strong>').text(msg.Sender + ": "),
+            $("<li style=\"overflow-wrap: break-word;\">").append(
+              $('<img>').attr("title", msg.Sender).css({
+                width: 50,
+                verticalAlign: "middle"
+              }).attr("src", msg.AvatarURL),
               $('<span>').text(msg.Body)
             )
           )
